@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/PASCOM/OneDrive - União Brasileira de Educação Católica – UBEC/ESTUDO/Documentos/ESTUDO/FACULDADE/3 Semestre/Estrutura de dados/AT2-N2/N2_AT2_espressoesMatematicas",
+      "program": "c:/Users/PASCOM/OneDrive - União Brasileira de Educação Católica – UBEC/ESTUDO/Documentos/ESTUDO/FACULDADE/3 Semestre/Estrutura de dados/AT2-N2/N2_AT2_espressoesMatematicas/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
