@@ -74,4 +74,4 @@ void posFixada(Pilha* p){
 }
 
 // Exibir o resultado
-void desempilhar(Pilha* p, int opcao){}
+// void desempilhar(Pilha* p, int opcao){}
