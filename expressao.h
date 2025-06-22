@@ -3,8 +3,7 @@
 
 typedef struct no{
     char dado;
-    struct no* prox;    
-    struct no* ant;
+    struct no* prox;        
 } No;
 
 typedef struct{
@@ -25,5 +24,7 @@ void liberarPilha(Pilha *p);
 // OPERAÇÕES
 int lerOpcao();
 void converte(Pilha* p, int opcao);
+// Função para converter Infixada -> pos-fixada
+void posFixada(Pilha* p);
 
 #endif
