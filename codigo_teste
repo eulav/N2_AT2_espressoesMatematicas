@@ -1,0 +1,80 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char *infixposfix(char *inf){
+
+    int n = strlen(inf);
+    char *posf;
+    posf = malloc((n + 1) * sizeof(char));
+    int i;
+    int j;
+    char *pilha;
+    int t;
+
+    pilha = malloc(n * sizeof(char));
+    t = 0;
+
+    for (i = j = 0; inf[i] != '\0'; i++)
+    {
+        switch (inf[i])
+        {
+            char x;
+        case '(':
+            pilha[t++] = inf[i];
+            break;
+        case ')':
+            x = pilha[--t];
+            while (x != '(')
+            {
+                posf[j++] = x;
+                x = pilha[--t];
+            }
+            break;
+        case '+':
+        case '-':
+           while (t > 0 && pilha[t - 1] != '(')
+           {
+            posf[j++] = pilha[--t];
+           }
+           pilha[t++] = inf[i];
+           break;
+        case '*':
+        case '/':
+           while (t > 0 && (x = pilha[t - 1]) != '(' && x != '+' && x != '-')
+           {
+            posf[j++] = pilha[--t];
+           }
+           pilha[t++] = inf[i];
+           break;
+        default:
+           if (inf[i] != ' ')
+           posf[j++] = inf[i];
+        }
+    }
+    while (t > 0)
+        posf[j++] = pilha[--t];
+    posf[j] = '\0';
+    free(pilha);
+    return posf;
+}
+
+int main(int argc, char *argv[]){
+    char *inf, *posf;
+
+    if (argc != 2)
+    {
+        printf("numerriejsns");
+        return 0;
+    }
+    
+    inf = argv[1];
+
+    printf("infixa = %s\n", inf);
+
+    posf = infixposfix(inf);
+
+    printf("posfixa = %s\n", posf);
+
+    return 0;
+}
