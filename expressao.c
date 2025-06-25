@@ -1,77 +1,232 @@
 #include <stdio.h>
-#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "expressao.h"
 
-Pilha* criarPilha(){
-    Pilha* p = malloc(sizeof(Pilha));
+// Pilha de char (operadores)
+
+PilhaChar* criarPilhaChar() {
+    PilhaChar *p = malloc(sizeof(PilhaChar));
     p->topo = NULL;
-    p->tamanho = 0;
     return p;
 }
 
-// VERIFICAR QUAL CONVERSÃO DE OPERAÇÃO QUE O USUÁRIO QUER
-int verificarOpcao(){    
-    int opcao;
-    do {
-        printf('Escolha uma opção:\n 1. Converter uma operação Pós-fixada -> Infixada.\n 2. Converter uma operação Infixada -> Pós-fixada.');
-        scanf("%d", &opcao);
-    } while(opcao != 1 || opcao != 2);
-    return opcao;
-}
-
-void empilhar(Pilha* p, char valor){    
-    No* novo = malloc(sizeof(No));
-    novo->dado = valor;   
+void empilharChar(PilhaChar *p, char valor) {
+    NoChar *novo = malloc(sizeof(NoChar));
+    novo->dado = valor;
     novo->prox = p->topo;
     p->topo = novo;
-    p->tamanho++;
 }
 
-void converte(Pilha* p, int opcao){
-    // VERIFICA QUAL CONVERSÃO VOCÊ ESCOLHEU
-   if (opcao == 2){
-    posFixada(p);
-   } else {
-    inFixada(p);
-   }
+char desempilharChar(PilhaChar *p) {
+    if (p->topo == NULL) return '\0';
+    NoChar *temp = p->topo;
+    char valor = temp->dado;
+    p->topo = temp->prox;
+    free(temp);
+    return valor;
 }
 
-// Vai receber uma lista de operação Infixada e converter para posFixada
-// (3 + 4) * 5
-void posFixada(Pilha* p){
-    bool parenteses;
-    No* atual = p->topo;
-    // Percorrer toda a lista, verifica se tem ()
-    while (atual != NULL){
-        if (atual->dado == '('){
-            parenteses = true;
-            break;
-        }
-        atual = atual->prox;
+char topoChar(PilhaChar *p) {
+    return p->topo ? p->topo->dado : '\0';
+}
+
+int pilhaCharVazia(PilhaChar *p) {
+    return p->topo == NULL;
+}
+
+void liberarPilhaChar(PilhaChar *p) {
+    while (!pilhaCharVazia(p)) {
+        desempilharChar(p);
     }
-    // se achar, precisa empilhar o próximo número
-    if (parenteses){
-        No* posFixada = malloc(sizeof(No));
-        // empilhando, 
-        posFixada->dado = atual->ant->dado;
-        posFixada->prox = p->topo;
-        p->topo = posFixada;
-        No* temp = p->topo;
-        while (posFixada != NULL){
-            // precisa verificar se é um operador
-            if (posFixada->dado == '+' || posFixada->dado == '-' || posFixada->dado == '*' || posFixada->dado == '/'){
-                temp = posFixada;
-                posFixada = posFixada->prox;
-                posFixada->prox = temp;
-            // Pula quando o nó for um ), a lista posFixada não possui parênteses
-            } else if (posFixada->dado == ')'){
-                posFixada = posFixada->prox;
+    free(p);
+}
+
+
+int precedencia(char op) {
+    if (op == '+' || op == '-') return 1;
+    if (op == '*' || op == '/') return 2;
+    return 0; // para '(' e outros
+}
+
+char* infixposfix(const char *inf) {
+    int n = strlen(inf);
+    char *posf = malloc(4 * n); 
+    if (!posf) return NULL;
+
+    PilhaChar *pilha = criarPilhaChar();
+    int i = 0, j = 0;
+
+    while (inf[i] != '\0') {
+        if (isspace(inf[i])) {
+            i++;
+            continue;
+        }
+      
+        if (isdigit(inf[i]) || inf[i] == '.') {
+            int start = i;
+            while (isdigit(inf[i]) || inf[i] == '.') i++;
+            int len = i - start;
+            memcpy(posf + j, inf + start, len);
+            j += len;
+            posf[j++] = ' '; 
+        }
+        else {
+            char c = inf[i];
+            if (c == '(') {
+                empilharChar(pilha, c);
             }
+            else if (c == ')') {
+                while (!pilhaCharVazia(pilha) && topoChar(pilha) != '(') {
+                    posf[j++] = desempilharChar(pilha);
+                    posf[j++] = ' ';
+                }
+                if (!pilhaCharVazia(pilha)) desempilharChar(pilha); 
+                else {
+                    free(posf);
+                    liberarPilhaChar(pilha);
+                    return NULL;
+                }
+            }
+            else { 
+                while (!pilhaCharVazia(pilha) && topoChar(pilha) != '(' &&
+                       precedencia(topoChar(pilha)) >= precedencia(c)) {
+                    posf[j++] = desempilharChar(pilha);
+                    posf[j++] = ' ';
+                }
+                empilharChar(pilha, c);
+            }
+            i++;
         }
-        
     }
-    
+
+    while (!pilhaCharVazia(pilha)) {
+        char op = desempilharChar(pilha);
+        if (op == '(') {
+            free(posf);
+            liberarPilhaChar(pilha);
+            return NULL;
+        }
+        posf[j++] = op;
+        posf[j++] = ' ';
+    }
+    if (j > 0) j--; 
+    posf[j] = '\0';
+
+    liberarPilhaChar(pilha);
+    return posf;
 }
 
-// Exibir o resultado
-void desempilhar(Pilha* p, int opcao){}
+
+typedef struct no_float {
+    float dado;
+    struct no_float *prox;
+} NoFloat;
+
+typedef struct {
+    NoFloat *topo;
+} PilhaFloat;
+
+PilhaFloat* criarPilhaFloat() {
+    PilhaFloat *p = malloc(sizeof(PilhaFloat));
+    p->topo = NULL;
+    return p;
+}
+
+void empilharFloat(PilhaFloat *p, float valor) {
+    NoFloat *novo = malloc(sizeof(NoFloat));
+    novo->dado = valor;
+    novo->prox = p->topo;
+    p->topo = novo;
+}
+
+float desempilharFloat(PilhaFloat *p) {
+    if (p->topo == NULL) return 0.0/0.0; 
+    NoFloat *temp = p->topo;
+    float valor = temp->dado;
+    p->topo = temp->prox;
+    free(temp);
+    return valor;
+}
+
+int pilhaFloatVazia(PilhaFloat *p) {
+    return p->topo == NULL;
+}
+
+void liberarPilhaFloat(PilhaFloat *p) {
+    while (!pilhaFloatVazia(p)) {
+        desempilharFloat(p);
+    }
+    free(p);
+}
+
+float avaliarPosfixada(const char *posf) {
+    PilhaFloat *p = criarPilhaFloat();
+    char token[64];
+    int i = 0, j = 0;
+
+    while (1) {
+        while (posf[i] == ' ') i++;
+        if (posf[i] == '\0') break;
+
+        j = 0;
+        while (posf[i] != ' ' && posf[i] != '\0') {
+            token[j++] = posf[i++];
+        }
+        token[j] = '\0';
+
+        if (strlen(token) == 1 && (token[0]=='+' || token[0]=='-' || token[0]=='*' || token[0]=='/')) {
+            if (pilhaFloatVazia(p)) {
+                liberarPilhaFloat(p);
+                printf("Erro: pilha vazia\n");
+                return 0;
+            }
+            float b = desempilharFloat(p);
+
+            if (pilhaFloatVazia(p)) {
+                liberarPilhaFloat(p);
+                printf("Erro: pilha vazia \n");
+                return 0;
+            }
+            float a = desempilharFloat(p);
+
+            float res;
+            switch(token[0]) {
+                case '+': res = a + b; break;
+                case '-': res = a - b; break;
+                case '*': res = a * b; break;
+                case '/': 
+                    if (b == 0) {
+                        liberarPilhaFloat(p);
+                        printf("Erro\n");
+                        return 0;
+                    }
+                    res = a / b; break;
+                default:
+                    liberarPilhaFloat(p);
+                    printf("Erro\n");
+                    return 0;
+            }
+            empilharFloat(p, res);
+        } else {
+            
+            float val = strtof(token, NULL);
+            empilharFloat(p, val);
+        }
+    }
+
+    if (pilhaFloatVazia(p)) {
+        printf("Expressao vazia\n");
+        return 0;
+    }
+    float resultado = desempilharFloat(p);
+    if (!pilhaFloatVazia(p)) {
+        printf("Expressao invalida \n");
+        liberarPilhaFloat(p);
+        return 0;
+    }
+
+    liberarPilhaFloat(p);
+    return resultado;
+}
