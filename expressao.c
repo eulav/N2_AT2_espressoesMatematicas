@@ -49,7 +49,8 @@ void liberarPilhaChar(PilhaChar *p) {
 int precedencia(char op) {
     if (op == '+' || op == '-') return 1;
     if (op == '*' || op == '/') return 2;
-    if (op == 's' || op == 'c') return 3;
+    if (op == '^' || op == 'R') return 3;
+    if (op == 's' || op == 'c') return 4;
     return 0; // para '(' e outros
 }
 
@@ -216,9 +217,27 @@ float avaliarPosfixada(char *posf) {
             token[j++] = posf[i++];
         }
         token[j] = '\0';
-        // operadores
-        if (strlen(token) == 1 && (token[0]=='+' || token[0]=='-' || token[0]=='*' || token[0]=='/')) {
-            if (pilhaFloatVazia(p)) {
+        if (strlen(token) == 1 && 
+           (token[0] == '+' || token[0] == '-' || token[0] == '*' || 
+            token[0] == '/' || token[0] == '^' || token[0] == 'R')) {
+
+            float res;
+
+            if (token[0] == 'R') {
+                if (pilhaFloatVazia(p)) {
+                    liberarPilhaFloat(p);
+                    printf("Erro: pilha vazia para R\n");
+                    return 0;
+                }
+                float a = desempilharFloat(p);
+                if (a < 0) {
+                    liberarPilhaFloat(p);
+                    printf("Erro: raiz de número negativo\n");
+                    return 0;
+                }
+                res = sqrt(a);
+            } else {          
+                  if (pilhaFloatVazia(p)) {
                 liberarPilhaFloat(p);
                 printf("Erro: pilha vazia\n");
                 return 0;
