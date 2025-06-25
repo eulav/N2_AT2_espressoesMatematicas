@@ -50,7 +50,7 @@ int precedencia(char op) {
     return 0; // para '(' e outros
 }
 
-char* infixposfix(const char *inf) {
+char* infixposfix(char *inf) {
     int n = strlen(inf);
     char *posf = malloc(4 * n); 
     if (!posf) return NULL;
@@ -161,7 +161,7 @@ void liberarPilhaFloat(PilhaFloat *p) {
     free(p);
 }
 
-float avaliarPosfixada(const char *posf) {
+float avaliarPosfixada(char *posf) {
     PilhaFloat *p = criarPilhaFloat();
     char token[64];
     int i = 0, j = 0;
@@ -230,3 +230,94 @@ float avaliarPosfixada(const char *posf) {
     liberarPilhaFloat(p);
     return resultado;
 }
+
+// Função para avaliar expressão infixa
+float avaliarInfixa(char *inf) {
+    char *posf = infixposfix(inf);
+    if (!posf) {
+        printf("Erro na conversao infixa para posfixa\n");
+        return 0;
+    }
+    float resultado = avaliarPosfixada(posf);
+    free(posf);
+    return resultado;
+}
+// Função para converter pós-fixada para infixada 
+typedef struct no_str {
+    char *dado;
+    struct no_str *prox;
+} NoStr;
+
+typedef struct {
+    NoStr *topo;
+} PilhaStr;
+
+void empilharStr(PilhaStr *p, char *valor) {
+    NoStr *novo = malloc(sizeof(NoStr));
+    novo->dado = valor;
+    novo->prox = p->topo;
+    p->topo = novo;
+}
+
+char* desempilharStr(PilhaStr *p) {
+    if (p->topo == NULL) return NULL;
+    NoStr *temp = p->topo;
+    char *valor = temp->dado;
+    p->topo = temp->prox;
+    free(temp);
+    return valor;
+}
+
+char* posfixainfix( char *posf) {
+    PilhaStr pilha = { NULL };
+
+    int i = 0;
+    char token[64];
+    while (1) {
+        // Pular espaços
+        while (posf[i] == ' ') i++;
+        if (posf[i] == '\0') break;
+
+        int j = 0;
+        while (posf[i] != ' ' && posf[i] != '\0') {
+            token[j++] = posf[i++];
+        }
+        token[j] = '\0';
+
+        // Se for operador
+        if (strlen(token) == 1 && (token[0]=='+' || token[0]=='-' || token[0]=='*' || token[0]=='/')) {
+            char *b = desempilharStr(&pilha);
+            char *a = desempilharStr(&pilha);
+            if (!a || !b) {
+                // Erro de expressão inválida
+                free(a);
+                free(b);
+                // Limpar pilha
+                while (pilha.topo) free(desempilharStr(&pilha));
+                return NULL;
+            }
+            // Montar nova string: "(a operador b)"
+            int tamanho = strlen(a) + strlen(b) + 6; // +6 para "(", " ", operador, " ", ")", "\0"
+            char *expr = malloc(tamanho);
+            snprintf(expr, tamanho, "(%s %c %s)", a, token[0], b);
+
+            free(a);
+            free(b);
+            empilharStr(&pilha, expr);
+        } else {
+            // É número: empilha uma cópia da string
+            empilharStr(&pilha, strdup(token));
+        }
+    }
+
+    char *resultado = desempilharStr(&pilha);
+    if (pilha.topo != NULL) {
+        // Expressão inválida (sobrou algo na pilha)
+        free(resultado);
+        while (pilha.topo) free(desempilharStr(&pilha));
+        return NULL;
+    }
+    return resultado;
+}
+
+
