@@ -31,10 +31,10 @@ int main() {
             continue;
         }
         getchar(); // consome \n
-
+        printf("\n============================================================================================================\n");
         switch (opcao) {
-            case 1:
-                printf("Digite a expressao infixada:\n");
+            case 1:                
+                printf("Digite a expressao infixada:\nOBS: Digite R'NUM' para a raiz de um número | Digite '^' como potenciação\n");
                 printf("Para seno ou cosseno, use s(NUM) ou c(NUM)\n");
                 if (!fgets(expr, MAX_EXPR, stdin)) {
                     printf("Erro na leitura\n");
@@ -47,13 +47,13 @@ int main() {
                 } else {
                     printf("Expressao pos-fixada: %s\n", conv);
                     res = avaliarPosfixada(conv);
-                    printf("Resultado: %.6f\n", res);
+                    printf("Resultado: %.2f\n", res);
                     free(conv);
                 }
                 break;
 
             case 2:
-                printf("Digite a expressao pos-fixada:\n");
+                printf("Digite a expressao pos-fixada:\nOBS: Digite R'NUM' para a raiz de um número | Digite '^' como potenciação\n");
                 printf("Obs: Não suporta seno/cosseno aqui, informe valores ja calculados.\n");
                 if (!fgets(expr, MAX_EXPR, stdin)) {
                     printf("Erro na leitura\n");
@@ -66,7 +66,7 @@ int main() {
                 } else {
                     printf("Expressao infixada: %s\n", conv);
                     res = avaliarPosfixada(expr);
-                    printf("Resultado: %.6f\n", res);
+                    printf("Resultado: %.2f\n", res);
                     free(conv);
                 }
                 break;
@@ -79,7 +79,7 @@ int main() {
                 }
                 expr[strcspn(expr, "\n")] = '\0';
                 res = avaliarPosfixada(expr);
-                printf("Resultado: %.6f\n", res);
+                printf("Resultado: %.2f\n", res);
                 break;
 
             case 4:
