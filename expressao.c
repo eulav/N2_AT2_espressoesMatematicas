@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h> // Para as operações de seno e cosseno
+#include <math.h>    // Para sin, cos, sqrt, pow
 #include <ctype.h>
 #include "expressao.h"
 
@@ -9,6 +9,7 @@
 #define PI 3.14159265358979323846
 
 // Pilha de char (operadores)
+
 PilhaChar* criarPilhaChar() {
     PilhaChar *p = malloc(sizeof(PilhaChar));
     p->topo = NULL;
@@ -46,33 +47,34 @@ void liberarPilhaChar(PilhaChar *p) {
     free(p);
 }
 
+// Define precedência dos operadores e funções
 int precedencia(char op) {
     if (op == '+' || op == '-') return 1;
     if (op == '*' || op == '/') return 2;
     if (op == '^' || op == 'R') return 3;
     if (op == 's' || op == 'c') return 4;
-    return 0; // para '(' e outros
+    return 0; // '(' e outros
 }
 
-// Conversão infixo -> posfixo
+// Conversão infixo para posfixo
 char* infixposfix(char *inf) {
     int n = strlen(inf);
-    char *posf = malloc(4 * n); 
+    char *posf = malloc(4 * n);
     if (!posf) return NULL;
 
     PilhaChar *pilha = criarPilhaChar();
     int i = 0, j = 0;
 
     while (inf[i] != '\0') {
-        // Verifica se há um espaço na array
         if (isspace(inf[i])) {
             i++;
             continue;
         }
-        // Verifixação de seno ou cosseno: s(num) ou c(num)
-        if((inf[i] == 's' || inf[i] == 'c') && inf[i + 1] == '('){
-            char func = inf[i]; 
-            i += 2; // pula o 's(' ou 'c('
+
+        // Detecta seno e cosseno: s(NUM) ou c(NUM)
+        if ((inf[i] == 's' || inf[i] == 'c') && inf[i+1] == '(') {
+            char func = inf[i];
+            i += 2; // pula "s(" ou "c("
             int start = i;
             while (isdigit(inf[i]) || inf[i] == '.') i++;
             int len = i - start;
@@ -82,55 +84,45 @@ char* infixposfix(char *inf) {
 
             float num = strtof(numStr, NULL);
             float resultado;
-            // No posFixo, irá já converter o seno e cosseno para o resultado
-            if (func == 's'){
-                // Para seno
-                resultado = sin(num * PI / 180.00); // convertendo para radiano. sin() calcula o seno do radiano
+            if (func == 's') {
+                resultado = sin(num * PI / 180.0);
             } else {
-                // Para cosseno
-                resultado = cos(num * PI / 180.00); // mesma coisa. cos() calcula o cosseno do radiano
+                resultado = cos(num * PI / 180.0);
             }
-
-            // Convertendo o resultado para string e atribuindo para a pilha posFixa
             char resStr[32];
-            snprintf(resStr, sizeof(resStr), "%.2f", resultado); /* Para substituir a string original com o resutado*/
+            snprintf(resStr, sizeof(resStr), "%.6f", resultado);
             int k = 0;
             while (resStr[k] != '\0') posf[j++] = resStr[k++];
             posf[j++] = ' ';
-            
-            if (inf[i] == ')') i++; // pula o ')'
+
+            if (inf[i] == ')') i++;
             continue;
         }
 
-
-        // Verifica se é um número ou um . (para números floats)
+        // Números (incluindo floats)
         if (isdigit(inf[i]) || inf[i] == '.') {
             int start = i;
             while (isdigit(inf[i]) || inf[i] == '.') i++;
             int len = i - start;
             memcpy(posf + j, inf + start, len);
             j += len;
-            posf[j++] = ' '; 
-        }
-        else {
+            posf[j++] = ' ';
+        } else {
             char c = inf[i];
             if (c == '(') {
                 empilharChar(pilha, c);
-            }
-            else if (c == ')') {
-                // verifica se há elementos na pilha e se o topo é diferente de ')'
+            } else if (c == ')') {
                 while (!pilhaCharVazia(pilha) && topoChar(pilha) != '(') {
                     posf[j++] = desempilharChar(pilha);
                     posf[j++] = ' ';
                 }
-                if (!pilhaCharVazia(pilha)) desempilharChar(pilha); 
+                if (!pilhaCharVazia(pilha)) desempilharChar(pilha);
                 else {
                     free(posf);
-                    liberarPilhaChar(pilha); // Libera toda a estrutura, caso esteja vazia
+                    liberarPilhaChar(pilha);
                     return NULL;
                 }
-            }
-            else { 
+            } else {
                 while (!pilhaCharVazia(pilha) && topoChar(pilha) != '(' &&
                        precedencia(topoChar(pilha)) >= precedencia(c)) {
                     posf[j++] = desempilharChar(pilha);
@@ -152,14 +144,14 @@ char* infixposfix(char *inf) {
         posf[j++] = op;
         posf[j++] = ' ';
     }
-    if (j > 0) j--; 
+    if (j > 0) j--;
     posf[j] = '\0';
 
     liberarPilhaChar(pilha);
     return posf;
 }
 
-// Pilha para números
+// Pilha de float para avaliação
 typedef struct no_float {
     float dado;
     struct no_float *prox;
@@ -175,7 +167,6 @@ PilhaFloat* criarPilhaFloat() {
     return p;
 }
 
-
 void empilharFloat(PilhaFloat *p, float valor) {
     NoFloat *novo = malloc(sizeof(NoFloat));
     novo->dado = valor;
@@ -184,7 +175,7 @@ void empilharFloat(PilhaFloat *p, float valor) {
 }
 
 float desempilharFloat(PilhaFloat *p) {
-    if (p->topo == NULL) return 0.0/0.0; 
+    if (p->topo == NULL) return 0.0/0.0;
     NoFloat *temp = p->topo;
     float valor = temp->dado;
     p->topo = temp->prox;
@@ -203,6 +194,7 @@ void liberarPilhaFloat(PilhaFloat *p) {
     free(p);
 }
 
+// Avalia expressão pós-fixada
 float avaliarPosfixada(char *posf) {
     PilhaFloat *p = criarPilhaFloat();
     char token[64];
@@ -217,9 +209,10 @@ float avaliarPosfixada(char *posf) {
             token[j++] = posf[i++];
         }
         token[j] = '\0';
-        if (strlen(token) == 1 && 
-           (token[0] == '+' || token[0] == '-' || token[0] == '*' || 
-            token[0] == '/' || token[0] == '^' || token[0] == 'R')) {
+
+        if (strlen(token) == 1 &&
+            (token[0] == '+' || token[0] == '-' || token[0] == '*' ||
+             token[0] == '/' || token[0] == '^' || token[0] == 'R')) {
 
             float res;
 
@@ -235,42 +228,42 @@ float avaliarPosfixada(char *posf) {
                     printf("Erro: raiz de número negativo\n");
                     return 0;
                 }
-                res = sqrt(a);
-            } else {          
-                  if (pilhaFloatVazia(p)) {
-                liberarPilhaFloat(p);
-                printf("Erro: pilha vazia\n");
-                return 0;
-            }
-            float b = desempilharFloat(p);
-
-            if (pilhaFloatVazia(p)) {
-                liberarPilhaFloat(p);
-                printf("Erro: pilha vazia \n");
-                return 0;
-            }
-            float a = desempilharFloat(p);
-
-            float res;
-            switch(token[0]) {
-                case '+': res = a + b; break;
-                case '-': res = a - b; break;
-                case '*': res = a * b; break;
-                case '/': 
-                    if (b == 0) {
-                        liberarPilhaFloat(p);
-                        printf("Erro\n");
-                        return 0;
-                    }
-                    res = a / b; break;
-                default:
+                res = sqrtf(a);
+            } else {
+                if (pilhaFloatVazia(p)) {
                     liberarPilhaFloat(p);
-                    printf("Erro\n");
+                    printf("Erro: pilha vazia\n");
                     return 0;
+                }
+                float b = desempilharFloat(p);
+
+                if (pilhaFloatVazia(p)) {
+                    liberarPilhaFloat(p);
+                    printf("Erro: pilha vazia\n");
+                    return 0;
+                }
+                float a = desempilharFloat(p);
+
+                switch(token[0]) {
+                    case '+': res = a + b; break;
+                    case '-': res = a - b; break;
+                    case '*': res = a * b; break;
+                    case '/':
+                        if (b == 0) {
+                            liberarPilhaFloat(p);
+                            printf("Erro: divisao por zero\n");
+                            return 0;
+                        }
+                        res = a / b; break;
+                    case '^': res = powf(a, b); break;
+                    default:
+                        liberarPilhaFloat(p);
+                        printf("Erro: operador desconhecido\n");
+                        return 0;
+                }
             }
             empilharFloat(p, res);
         } else {
-            
             float val = strtof(token, NULL);
             empilharFloat(p, val);
         }
@@ -282,7 +275,7 @@ float avaliarPosfixada(char *posf) {
     }
     float resultado = desempilharFloat(p);
     if (!pilhaFloatVazia(p)) {
-        printf("Expressao invalida \n");
+        printf("Expressao invalida\n");
         liberarPilhaFloat(p);
         return 0;
     }
@@ -291,7 +284,7 @@ float avaliarPosfixada(char *posf) {
     return resultado;
 }
 
-// Função para avaliar expressão infixa
+// Avalia expressão infixa (função auxiliar)
 float avaliarInfixa(char *inf) {
     char *posf = infixposfix(inf);
     if (!posf) {
@@ -302,7 +295,9 @@ float avaliarInfixa(char *inf) {
     free(posf);
     return resultado;
 }
-// Função para converter pós-fixada para infixada 
+
+// Conversão posfixa para infixa (para visualização)
+
 typedef struct no_str {
     char *dado;
     struct no_str *prox;
@@ -328,13 +323,12 @@ char* desempilharStr(PilhaStr *p) {
     return valor;
 }
 
-char* posfixainfix( char *posf) {
+char* posfixainfix(char *posf) {
     PilhaStr pilha = { NULL };
 
     int i = 0;
     char token[64];
     while (1) {
-        // Pular espaços
         while (posf[i] == ' ') i++;
         if (posf[i] == '\0') break;
 
@@ -344,35 +338,30 @@ char* posfixainfix( char *posf) {
         }
         token[j] = '\0';
 
-        // Se for operador
-        if (strlen(token) == 1 && (token[0]=='+' || token[0]=='-' || token[0]=='*' || token[0]=='/')) {
+        if (strlen(token) == 1 &&
+           (token[0]=='+' || token[0]=='-' || token[0]=='*' || token[0]=='/' ||
+            token[0]=='^' || token[0] == 'R')) {
             char *b = desempilharStr(&pilha);
             char *a = desempilharStr(&pilha);
             if (!a || !b) {
-                // Erro de expressão inválida
                 free(a);
                 free(b);
-                // Limpar pilha
                 while (pilha.topo) free(desempilharStr(&pilha));
                 return NULL;
             }
-            // Montar nova string: "(a operador b)"
-            int tamanho = strlen(a) + strlen(b) + 6; // +6 para "(", " ", operador, " ", ")", "\0"
+            int tamanho = strlen(a) + strlen(b) + 6;
             char *expr = malloc(tamanho);
             snprintf(expr, tamanho, "(%s %c %s)", a, token[0], b);
-
             free(a);
             free(b);
             empilharStr(&pilha, expr);
         } else {
-            // É número: empilha uma cópia da string
             empilharStr(&pilha, strdup(token));
         }
     }
 
     char *resultado = desempilharStr(&pilha);
     if (pilha.topo != NULL) {
-        // Expressão inválida (sobrou algo na pilha)
         free(resultado);
         while (pilha.topo) free(desempilharStr(&pilha));
         return NULL;

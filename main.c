@@ -8,7 +8,8 @@
 
 int main() {
     if (!setlocale(LC_ALL, "Portuguese"))
-    setlocale(LC_ALL, "pt_BR.UTF-8");
+        setlocale(LC_ALL, "pt_BR.UTF-8");
+
     char expr[MAX_EXPR];
     char *conv = NULL;
     float res;
@@ -16,25 +17,25 @@ int main() {
 
     do {
         printf(
-        "\n--- MENU ---\n"
-        "1. Converter infixa para pos-fixada - OBS: Essa opção lê o seno ou cosseno\n"
-        "2. Converter pos-fixada para infixa - OBS: Essa opção não lê seno ou cosseno\n"
-        "3. Resolução da expressao pos-fixada\n"
-        "4. Sair\n"
-        "Escolha uma opcao: "
+            "\n--- MENU ---\n"
+            "1. Converter infixa para pos-fixada - OBS: Le seno e cosseno\n"
+            "2. Converter pos-fixada para infixa - OBS: Não suporta seno ou cosseno\n"
+            "3. Avaliar expressao pos-fixada\n"
+            "4. Sair\n"
+            "Escolha uma opcao: "
         );
 
         if (scanf("%d", &opcao) != 1) {
-            // Limpar stdin em caso de entrada inválida
-            while (getchar() != '\n');
+            while (getchar() != '\n'); // limpa stdin
             printf("Entrada invalida.\n");
             continue;
         }
-        getchar(); // consumir '\n'
+        getchar(); // consome \n
 
         switch (opcao) {
             case 1:
-                printf("Digite a expressao infixada: \nOBS: Para digitar uma função seno ou cosseno, digite: s(NUM) ou c(NUM)\n");
+                printf("Digite a expressao infixada:\n");
+                printf("Para seno ou cosseno, use s(NUM) ou c(NUM)\n");
                 if (!fgets(expr, MAX_EXPR, stdin)) {
                     printf("Erro na leitura\n");
                     break;
@@ -46,13 +47,14 @@ int main() {
                 } else {
                     printf("Expressao pos-fixada: %s\n", conv);
                     res = avaliarPosfixada(conv);
-                    printf("Resultado: %.2f\n", res);
+                    printf("Resultado: %.6f\n", res);
                     free(conv);
                 }
                 break;
 
             case 2:
-                printf("Digite a expressao pos-fixada: \nOBS: Essa função não lê, seno() ou cosseno(), digite já o resultado destas funções, caso não saiba, escolha a opção: 1\n");
+                printf("Digite a expressao pos-fixada:\n");
+                printf("Obs: Não suporta seno/cosseno aqui, informe valores ja calculados.\n");
                 if (!fgets(expr, MAX_EXPR, stdin)) {
                     printf("Erro na leitura\n");
                     break;
@@ -64,7 +66,7 @@ int main() {
                 } else {
                     printf("Expressao infixada: %s\n", conv);
                     res = avaliarPosfixada(expr);
-                    printf("Resultado: %.2f\n", res);
+                    printf("Resultado: %.6f\n", res);
                     free(conv);
                 }
                 break;
@@ -77,7 +79,7 @@ int main() {
                 }
                 expr[strcspn(expr, "\n")] = '\0';
                 res = avaliarPosfixada(expr);
-                printf("Resultado: %.2f\n", res);
+                printf("Resultado: %.6f\n", res);
                 break;
 
             case 4:
@@ -88,10 +90,7 @@ int main() {
                 printf("Opcao invalida.\n");
                 break;
         }
-       
     } while (opcao != 4);
-
-    system("clear");
 
     return 0;
 }

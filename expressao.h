@@ -16,10 +16,10 @@ char desempilharChar(PilhaChar *p);
 char topoChar(PilhaChar *p);
 int pilhaCharVazia(PilhaChar *p);
 void liberarPilhaChar(PilhaChar *p);
-// CONVERSÕES
-char* infixposfix( char *inf);
-float avaliarPosfixada( char *posf);
-char* posfixainfix( char *posf);
+
+char* infixposfix(char *inf);
+float avaliarPosfixada(char *posf);
+char* posfixainfix(char *posf);
 float avaliarInfixa(char *inf);
 
 #endif
