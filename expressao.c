@@ -7,15 +7,7 @@
 
 #define PI 3.14159265358979323846
 
-// Pilha de float para avaliação
-typedef struct no_float {
-    float dado;
-    struct no_float *prox;
-} NoFloat;
 
-typedef struct {
-    NoFloat *topo;
-} PilhaFloat;
 
 //Pilha e funções de pilha de Char adaptada para string
 PilhaChar* criarPilhaChar() {
