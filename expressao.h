@@ -1,29 +1,36 @@
-#ifndef EXPRESSOES_H
-#define EXPRESSOES_H
+#ifndef EXPRESSAO_H
+#define EXPRESSAO_H
 
-typedef struct no{
-    char dado;
-    struct no* prox;    
-    struct no* ant;
-} No;
+typedef struct no_char {
+    char *dado;
+    struct no_char *prox;
+} NoChar;
 
-typedef struct{
-    No* topo;
-    int tamanho;
-} Pilha;
+typedef struct {
+    NoChar *topo;
+} PilhaChar;
+
+// Pilha de float para avaliação
+typedef struct no_float {
+    float dado;
+    struct no_float *prox;
+} NoFloat;
+
+typedef struct {
+    NoFloat *topo;
+} PilhaFloat;
 
 
-
-// PILHA
-Pilha* criarPilha();
-void empilhar(Pilha* p, char valor);
-char desempilhar(Pilha* p, char valor);
-int estaVazia(Pilha* p);
-void mostrarPilha(Pilha *p);
-void liberarPilha(Pilha *p);
-
-// OPERAÇÕES
-int lerOpcao();
-void converte(Pilha* p, int opcao);
+PilhaChar* criarPilhaChar();
+PilhaFloat* criarPilhaFloat();
+void empilharChar(PilhaChar *p, char *valor);
+char* desempilharChar(PilhaChar *p);
+char topoChar(PilhaChar *p);
+int pilhaCharVazia(PilhaChar *p);
+void liberarPilhaChar(PilhaChar *p);
+char* infixposfix(char *inf);
+float avaliarPosfixada(char *posf);
+char* posfixainfix(char *posf);
+float avaliarInfixa(char *inf);
 
 #endif
