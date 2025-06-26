@@ -10,6 +10,16 @@ typedef struct {
     NoChar *topo;
 } PilhaChar;
 
+// Pilha de float para avaliação
+typedef struct no_float {
+    float dado;
+    struct no_float *prox;
+} NoFloat;
+
+typedef struct {
+    NoFloat *topo;
+} PilhaFloat;
+
 
 PilhaChar* criarPilhaChar();
 PilhaFloat* criarPilhaFloat();
